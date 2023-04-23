@@ -15,8 +15,12 @@ local options = {
     mouse = 'a', -- enable the use of the mouse. 'a' = all modes
     colorcolumn = {'80', '110'}, -- displays the column number provided
     showmatch = true, -- highlight the matching part of [] {} ()
+
+    -- options needed for staline plugin
+    laststatus = 3,
+    showtabline = 2,
+    termguicolors = true,
 }
---]]
 
 for k, v in pairs(options) do
     vim.opt[k] = v
