@@ -1,8 +1,7 @@
-local keymap = vim.api.nvim_set_keymap
+local keymap = vim.keymap.set
 
 -- Leader key
 vim.g.mapleader = " " -- Setting space as leader key
-vim.g.maplocalleader = " "
 
 --[[
 
@@ -16,3 +15,21 @@ keymap(
 )
 
 --]]
+
+-- FUNCTION
+
+function resize_tree(value)
+    require './plugins/nvim-tree'.NvimTreeResize(value)
+end
+
+keymap("n", "<leader>vs", ":vsplit<cr>", {})
+keymap("n", "<leader>hs", ":split<cr>", {})
+
+-- NvimTree
+keymap("n", "<leader>tt", ":NvimTreeToggle<cr>", {})
+keymap("n", "<leader>tf", ":NvimTreeFocus<cr>", {})
+keymap("n", "<leader>tr", ":lua resize_tree(vim.fn.input('Enter value: '))<cr>", {})
+
+-- buffers
+keymap("n", "<tab>", ":bn<cr>", {})
+keymap("n", "<S-tab>", ":bp<cr>", {})

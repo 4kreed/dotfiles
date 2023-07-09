@@ -44,7 +44,7 @@ return {
             },
             special_table = {
                 NvimTree = { 'NvimTree', ' ' },
-                packer = { 'Packer',' ' },        -- etc
+                -- packer = { 'Packer',' ' },        -- etc
             },
             lsp_symbols = {
                 Error=" ",
