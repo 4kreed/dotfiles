@@ -1,7 +1,7 @@
 local keymap = vim.keymap.set
 
 -- Leader key
-vim.g.mapleader = " " -- Setting space as leader key
+vim.g.mapleader = "," -- Setting space as leader key
 
 --[[
 
