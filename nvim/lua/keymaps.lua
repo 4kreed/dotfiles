@@ -1,3 +1,4 @@
+-- renaming for convenience
 local keymap = vim.keymap.set
 
 -- Leader key
@@ -9,11 +10,13 @@ How to set a keymap
 
 keymap(
     "<mode>", -- values are "n" for normal mode, "i" for insert mode, "v" for visual mode
-    "<key_keymap>", -- example "C-h" for Control-h
+    "<new_keymap>", -- example "C-h" for Control-h
     "<current_keymap>", -- example "<C-w>h" for Control-window-h
     opts
 )
 
+one of the opts is callback, an example of this is
+{ callback = function() print("KLK") end }
 --]]
 
 keymap("n", "<leader>vs", ":vsplit<cr>")
