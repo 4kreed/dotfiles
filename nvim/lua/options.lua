@@ -20,6 +20,9 @@ local options = {
     laststatus = 3,
     showtabline = 2,
     termguicolors = true,
+    
+    -- options needed for autocompletion
+    completeopt = { 'menu', 'menuone', 'noselect' },
 }
 
 for k, v in pairs(options) do
