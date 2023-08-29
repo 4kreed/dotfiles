@@ -31,7 +31,7 @@ return {
             sections = {
                 left = { '-mode', 'left_sep_double', ' ', 'branch' },
                 mid  = { 'file_name' },
-                right = { 'right_sep_double', '-lsp', '-lsp_name', '-line_column' },
+                right = { 'right_sep_double', '-line_column' },
             },
             special_table = {
                 NvimTree = { 'NvimTree', ' ' },

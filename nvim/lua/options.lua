@@ -15,6 +15,7 @@ local options = {
     mouse = 'a', -- enable the use of the mouse. 'a' = all modes
     colorcolumn = {'80', '110'}, -- displays the column number provided
     showmatch = true, -- highlight the matching part of [] {} ()
+    clipboard = vim.opt.clipboard + "unnamedplus", -- use the unnamedplus clipboard. The goal of this is to be able to paste content in telescope finder. Alternatively we could, outside of this options table, do vim.opt.clipboard:append("unnamedplus").
 
     -- options needed for staline plugin
     laststatus = 3,

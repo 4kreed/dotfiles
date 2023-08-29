@@ -1,21 +1,7 @@
 return {
     "neovim/nvim-lspconfig",
     dependencies = {
-        {
-            "williamboman/mason.nvim",
-            config = function()
-                require("mason").setup()
-            end,
-        },
-        {
-            "williamboman/mason-lspconfig.nvim",
-            config = function()
-                require("mason-lspconfig").setup({
-                    ensure_installed = { "clangd" },
-                })
-            end,
-        },
-        {
+       {
             "p00f/clangd_extensions.nvim",
             config = function()
                 require("clangd_extensions").setup()
