@@ -1,0 +1,5 @@
+# To see the default files that stow ignores check https://www.gnu.org/software/stow/manual/stow.html#Types-And-Syntax-Of-Ignore-Lists
+
+README.md
+\.git
+utils
