@@ -3,7 +3,7 @@
     builtin colorschemes that come with nvim you'll have to install it (most
     likely as plugin
 ]]--
-local colorscheme = "onedark"
+local colorscheme = "adwaita"
 
 -- install it the easy way, by running the builtin colorscheme command
 local status_ok, _ = pcall(vim.cmd, "colorscheme " .. colorscheme)
