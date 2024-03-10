@@ -11,7 +11,7 @@ return {
                 full_path       = true,
                 line_column     = "[%l/%L]", -- `:h stl` to see all flags.
                 font_active     = "bold",     -- "bold", "italic", "bold,italic", etc
-                mod_symbol      = "   ",
+                mod_symbol      = " 󰏫 ",
                 lsp_client_symbol = "   ",
                 branch_symbol   = " ",
                 cool_symbol     = " ",       -- Change this to override default OS icon.
@@ -23,10 +23,10 @@ return {
                 v = "#4799eb",   -- etc..
              },
             mode_icons = {
-                n = "  NORMAL",
-                i = "  INSERTING",
+                n = "  NORMAL",
+                i = "󰏫  INSERTING",
                 c = "  COMMAND",
-                v = "  VISUAL",   -- etc..
+                v = "󰛐  VISUAL",   -- etc..
             },
             sections = {
                 left = { '-mode', 'left_sep_double', ' ', 'branch' },
@@ -35,7 +35,7 @@ return {
             },
             special_table = {
                 NvimTree = { 'NvimTree', ' ' },
-                -- packer = { 'Packer',' ' },        -- etc
+                -- packer = { 'Packer','󰇚 ' },        -- etc
             },
         })
         require('stabline').setup({
