@@ -1,17 +1,19 @@
 return {
     'nvim-treesitter/nvim-treesitter',
-    build = function()
-        require('nvim-treesitter.install').update({ with_sync = true })
-    end,
-    config = function()
-        local configs = require('nvim-treesitter.configs')
-
-        configs.setup({
-            ensure_installed = { 'c' },
-            sync_install = false,
-            highlight = { enable = true },
-            indent = { enable = true },
-        })
+    build = ":TSUpdate",
+    dependencies = {
+        "windwp/nvim-ts-autotag"
+    },
+    opts = {
+        ensure_installed = { 'c', "lua", "html", "css" },
+        auto_install = true,
+        sync_install = false,
+        highlight = { enable = true },
+        indent = { enable = true },
+        autotag = { enable = true }, -- nvim-ts-autotag
+    },
+    config = function(_, opts)
+        require('nvim-treesitter.configs').setup(opts)
 
         -- vim.opt.foldmethod = "expr"
         -- vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
