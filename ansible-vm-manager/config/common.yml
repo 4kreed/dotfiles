@@ -7,6 +7,7 @@
       - git
       - neovim
       - base-devel
+      - zsh
     state: present
     update_cache: true
 
@@ -226,7 +227,20 @@
     - name: Install Cursor editor (AUR)
       shell: yay -S --noconfirm cursor-bin
       when: cursor_installed.rc != 0
-
+- name: Install Zsh and Powerlevel10k
+  become: true
+  block:
+    - name: Clone powerlevel10k theme
+      become: false
+      git:
+        repo: https://github.com/romkatv/powerlevel10k.git
+        dest: "/home/{{ ansible_user }}/opt/powerlevel10k"
+        update: no
+        version: master
+    - name: Ensure Zsh is default shell for user
+      user:
+        name: "{{ ansible_user }}"
+        shell: /bin/zsh
 - name: Remove passwordless sudo for {{ ansible_user }}
   become: true
   file:
