@@ -1,0 +1,14 @@
+all:
+  hosts:
+    # vm1:
+    #   ansible_host: 192.168.1.10
+    #   ansible_user: 4kr33d
+    # vm2:
+    #   ansible_host: 192.168.1.11
+    #   ansible_user: alvaro
+    test:
+      ansible_host: 192.168.1.48
+      ansible_user: test
+    local:
+      ansible_host: 127.0.0.1
+      ansible_user: 4kr33d

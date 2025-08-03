@@ -1,0 +1,10 @@
+# main.yml - Main playbook entry point
+
+- name: Provision Arch Linux VM
+  hosts: all
+  gather_facts: true
+
+  # All main configuration tasks are in a separate file for organization
+  tasks:
+    - name: Include common configuration tasks
+      include_tasks: config/common.yml

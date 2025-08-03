@@ -1,0 +1,234 @@
+# Common configuration applied to all VMs
+
+- name: Install essential packages
+  become: true
+  pacman:
+    name:
+      - git
+      - neovim
+      - base-devel
+    state: present
+    update_cache: true
+
+- name: Install yay
+  become: true
+  vars:
+    yay_dir: "/home/{{ ansible_user }}/opt/yay"
+  block:
+    - name: Check if yay is already installed
+      become: false
+      command: which yay
+      register: yay_installed
+      ignore_errors: true
+      changed_when: false
+    - name: Check if sudoers file for user exists
+      stat:
+        path: "/etc/sudoers.d/{{ ansible_user }}"
+      register: sudoers_file
+      when: yay_installed.rc != 0
+    - name: Add {{ ansible_user }} to sudoers with NOPASSWD
+      copy:
+        dest: "/etc/sudoers.d/{{ ansible_user }}"
+        content: "{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL"
+        mode: '0440'
+      when:
+        - yay_installed.rc != 0
+        - not sudoers_file.stat.exists
+    - name: Create yay directory
+      become: false
+      file:
+        path: "{{ yay_dir }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      when: yay_installed.rc != 0
+    - name: Clone yay repository
+      become: false
+      git:
+        repo: https://aur.archlinux.org/yay.git
+        dest: "{{ yay_dir }}"
+        update: false
+      when: yay_installed.rc != 0
+    - name: Build and install yay using makepkg
+      become: false
+      shell: makepkg -si --noconfirm
+      args:
+        chdir: "{{ yay_dir }}"
+      when: yay_installed.rc != 0
+
+- name: Install NoMachine
+  become: true
+  block:
+    - name: Check if NoMachine is already installed
+      become: false
+      command: pacman -Q nomachine
+      register: nomachine_installed
+      ignore_errors: true
+      changed_when: false
+    - name: Install NoMachine with yay
+      become: false
+      shell: yay -S --noconfirm nomachine
+      when: nomachine_installed.rc != 0
+    - name: Enable and start NoMachine server
+      become: true
+      systemd:
+        name: nxserver
+        enabled: true
+        state: started
+    - name: Manually start NoMachine backend
+      become: true
+      command: /etc/NX/nxserver --startup
+    - name: Enable autologin for current user in GDM (AutomaticLoginEnable)
+      ini_file:
+        path: /etc/gdm/custom.conf
+        section: daemon
+        option: AutomaticLoginEnable
+        value: 'true'
+    - name: Set autologin user in GDM (AutomaticLogin)
+      ini_file:
+        path: /etc/gdm/custom.conf
+        section: daemon
+        option: AutomaticLogin
+        value: "{{ ansible_user }}"
+
+- name: Configure GNOME settings for the user
+  block:
+    - name: Get UID of the current user
+      command: id -u
+      register: user_uid
+      changed_when: false
+    - name: Change from Wayland to Xorg
+      become: true
+      lineinfile:
+        path: /etc/gdm/custom.conf
+        regexp: '^#?WaylandEnable='
+        line: 'WaylandEnable=false'
+        state: present
+        backrefs: yes
+    # - name: Reboot
+    #   become: true
+    #   reboot:
+    - name: Set GNOME dark color scheme
+      shell: "DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/{{ user_uid.stdout }} gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
+      args:
+        executable: /bin/bash
+    - name: Set dark wallpaper
+      shell: "DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/{{ user_uid.stdout }} gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/gnome/map-d.svg'"
+      args:
+        executable: /bin/bash
+    - name: Set window button layout to show minimize, maximize, and close
+      shell: "DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/{{ user_uid.stdout }} gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'"
+      args:
+        executable: /bin/bash
+    - name: Download gnome-shell-extension-installer script
+      become: false
+      get_url:
+        url: https://raw.githubusercontent.com/brunelli/gnome-shell-extension-installer/master/gnome-shell-extension-installer
+        dest: "/home/{{ ansible_user }}/opt/gnome-shell-extension-installer"
+        mode: '0755'
+    - name: Install GNOME Shell extensions
+      become: false
+      loop:
+        - 1160   # Dash to Panel
+        - 3733   # Tiling Assistant
+        - 7660   # Keep Pinned Apps in App Grid
+      loop_control:
+        label: "Installing extension ID {{ item }}"
+      shell: "/home/{{ ansible_user }}/opt/gnome-shell-extension-installer --yes {{ item }}"
+      args:
+        executable: /bin/bash
+    - name: Enable GNOME extensions
+      become: false
+      shell: |
+        gnome-extensions enable dash-to-panel@jderose9.github.com
+        gnome-extensions enable tiling-assistant@leleat-on-github
+        gnome-extensions enable pinned-apps-in-appgrid@brunosilva.io
+      environment:
+        DISPLAY: ":0"
+        XDG_RUNTIME_DIR: "/run/user/{{ user_uid.stdout }}"
+    - name: Template Dash to Panel config to remote user home
+      become: false
+      template:
+        src: assets/dash-to-panel.conf.j2
+        dest: /home/{{ ansible_user }}/opt/dash-to-panel.conf
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+    - name: Copy arch icon to Pictures folder
+      become: false
+      copy:
+        src: assets/archIcon.png
+        dest: "/home/{{ ansible_user }}/Pictures/archIcon.png"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+    - name: Import Dash to Panel config using dconf
+      become: false
+      shell: >
+        dconf load /org/gnome/shell/extensions/dash-to-panel/ < /home/{{ ansible_user }}/opt/dash-to-panel.conf
+      environment:
+        DISPLAY: ":0"
+        XDG_RUNTIME_DIR: "/run/user/{{ user_uid.stdout }}"
+    - name: Set keyboard input sources (add US and ES layouts)
+      become: false
+      shell: >
+        gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('xkb', 'es')]"
+      environment:
+        DISPLAY: ":0"
+        XDG_RUNTIME_DIR: "/run/user/{{ user_uid.stdout }}"
+    - name: Enable GNOME input source indicator
+      become: false
+      shell: >
+        gsettings set org.gnome.desktop.input-sources show-all-sources true
+      environment:
+        DISPLAY: ":0"
+        XDG_RUNTIME_DIR: "/run/user/{{ user_uid.stdout }}"
+
+- name: Install applications
+  become: false
+  block:
+    - name: Install Firefox from pacman
+      become: true
+      pacman:
+        name: firefox
+        state: present
+        update_cache: true
+    - name: Check if Brave is already installed
+      command: yay -Q brave-bin
+      register: brave_installed
+      ignore_errors: true
+      changed_when: false
+    - name: Install Brave (AUR)
+      shell: yay -S --noconfirm brave-bin
+      when: brave_installed.rc != 0
+    - name: Check if Chrome is already installed
+      command: yay -Q google-chrome
+      register: chrome_installed
+      ignore_errors: true
+      changed_when: false
+    - name: Install Google Chrome (AUR)
+      shell: yay -S --noconfirm google-chrome
+      when: chrome_installed.rc != 0
+    - name: Check if VS Code is already installed
+      command: yay -Q visual-studio-code-bin
+      register: vscode_installed
+      ignore_errors: true
+      changed_when: false
+    - name: Install Visual Studio Code (AUR)
+      shell: yay -S --noconfirm visual-studio-code-bin
+      when: vscode_installed.rc != 0
+    - name: Check if Cursor is already installed
+      command: yay -Q cursor-bin
+      register: cursor_installed
+      ignore_errors: true
+      changed_when: false
+    - name: Install Cursor editor (AUR)
+      shell: yay -S --noconfirm cursor-bin
+      when: cursor_installed.rc != 0
+
+- name: Remove passwordless sudo for {{ ansible_user }}
+  become: true
+  file:
+    path: "/etc/sudoers.d/{{ ansible_user }}"
+    state: absent
